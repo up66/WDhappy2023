@@ -1,0 +1,45 @@
+/*2.1 王道第二章，代码题。第一小节，线性表*/
+/*01 删除最小元素（假设唯一），返回最小元素，空出位置后面补*/
+
+#include<stdio.h>      
+#include<malloc.h>      
+#define Maxsize 50      
+typedef int ElemType;      
+typedef struct      
+{      
+    ElemType data[Maxsize];      
+    int length;      
+}SqList;      
+//自定义函数声明部分      
+void CreatList(SqList *&L,ElemType a[],int n);//用数组创建线性表      
+void DispList(SqList *L);//输出线性表DisList(L)      
+bool ListEmpty(SqList *L);//判断是否为空表ListEmpty(L)      
+//实现测试函数      
+int main()      
+{      
+    SqList *sq;      
+    ElemType x[6]={5,8,7,2,4,9};      
+    CreatList(sq,x,6);      
+    DispList(sq);      
+    return 0;      
+}      
+//实现自定义函数      
+void CreatList(SqList *&L,ElemType a[],int n)//用数组创建线性表      
+{      
+    int i;      
+    L=(SqList * )malloc(sizeof(SqList));      
+    for(i=0;i<n;i++)      
+        L->data[i]=a[i];      
+    L->length=n;       
+}      
+void DispList(SqList *L)//输出线性表DisList(L)      
+{      
+    int i;      
+    for(i=0;i<L->length;i++)      
+        printf("%d ",L->data[i]);      
+    printf("\n");      
+}      
+bool ListEmpty(SqList *L)//判断是否为空表ListEmpty(L)      
+{      
+    return(L->length==0);      
+}
