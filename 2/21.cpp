@@ -108,22 +108,74 @@ bool ListDelete(SqList &L,int i,ElemType &e){
 		return true;
 }
 
+//顺序查找
+int LocalElem(SqList L,ElemType e){
+		int i;
+		for(i=0;i<L.length;i++)
+				if(L.data[i]==e)//从前=》后查找第一个元素等于e的值
+						return i+1;
+				return 0;
+}
+
+bool Delete_Same(SqList &L){
+		int i,j;
+		if(L.length==0)
+				return false;
+		for(i=0,j=1;j<L.length;j++)
+				if(L.data[i]!=L.data[j])
+						L.data[++i]=L.data[j];
+		L.length=i+1;
+		return true;
+}
+
+//7 两有序顺序表合并新有序表 c=a并b(不同的)（重要）,返回新
+bool Merge(SqList A,SqList B,SqList &C){
+		int i=0,j=0,k=0;
+		if(A.length+B.length>MaxSize)
+				return false;
+		while(i<A.length&&j<B.length){
+				if(A.data[i]<=B.data[j])
+						C.data[k++]=A.data[i++];//先把A.data[i]插入，然后i++再进行后面比较
+				else
+						C.data[k++]=B.data[j++];
+		}
+	//	printf("2121212\n");
+		while(i<A.length)  //最后全部比较完之后还会剩余一个没有匹配完.进行判断
+				C.data[k++]=A.data[i++];
+	  while(j<A.length)  
+				C.data[k++]=B.data[j++];
+		C.length=k;
+		//printf("ccc:%d\n",C.length);
+		return true;
+}
+
 int main()
 {
 		SqList L;
+		SqList B;
+		SqList C;
 		int i=0,e=0;
 		int flag=0;
 		L.length=0;
+		B.length=0;
 		for(i=0;i<10;i++){
 				L.data[i]=i;//赋初值
 				L.length++; //length不能丢
 		}
-
-		ListInsert(L,2,121);//i代表插入位置是从1开始，不要和数组下标混淆
-		ListInsert(L,3,2333);
-		ListDelete(L,3,e);//一次性操作
-		for(i=0;i<L.length;i++){
-				printf("%d\t",L.data[i]);
+		for(i=0;i<10;i++){
+				B.data[i]=i;//赋初值
+				B.length++; //length不能丢
+		}
+		//ListInsert(L,2,121);//i代表插入位置是从1开始，不要和数组下标混淆
+		//ListInsert(B,2,121);
+		//ListInsert(L,3,121);
+		Merge(L,B,C);
+		//ListDelete(L,3,e);//一次性操作
+		//Delete_Same(L);
+		int local=LocalElem(L,5);//查找元素为5的位置（不是下标）
+		//printf("%d\n",local);
+		for(i=0;i<C.length;i++){
+				printf("%d\t",C.data[i]);
 		}
 		return 0;
 }
