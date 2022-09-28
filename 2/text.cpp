@@ -496,28 +496,269 @@ typedef struct{
 }SLinkList(MaxSize);
 
 
+
+
 /*********************************************王道第二章******************************************************/
 
+//基础//
+/**单链表结点类型描述**/
+typedef struct LNode{     //定义单链表结点类型
+		ElemType data;					//数据域
+		struct LNode *next;   //指针域
+}LNode,*LinkList;
+
+
+
 //01设计一个递归算法，删除不带头结点的单链表L中所有值为x的结点
+//f(L,x)，f(L->next,x)功能是删除以L->next为首结点的单链表中所有值等于x的结点
+/**
+终止条件：f(L,x)不做任何事情   L为空表时
+递归主体:f(L,x)删除L结点，f(L>next,x)(若L->data==x)
+f(L,x)=f(L->next,x); 其他情况
+*/
+void Del_X_3(LinkList &L,ElemType x){
+		LNode *p;  //p指向待删除结点
+		if(L==NULL){
+				return;
+		}
+		if(L->data==x){  //若L所指结点值为x
+				p=L;  //删除*L,并让L指向下一结点
+				L=L->next;
+				free(p);
+				Del_X_3(L,x);//递归调用
+		}
+		else   //若L所指结点值不为x
+				Del_X_3(L->next,x);	//递归调用
+}
 
 //02 在带头结点的单链表L中，删除所有值为x的结点，并释放其空间，假设值为x的不唯一
+/*解法一:p从头到尾扫描单链表，pre指向*p的前驱。若p所指结点值为x删除，并让p指向下一个结点，否则让pre，p指针同步后移一个结点*/
+void Del_X_1(LinkList &L,ElemType x){
+		//L为带头结点的单链表
+		LNode *p=L->next,*pre=L,*q;//置p和pre的初始值   ////       (pre)L p------  L----pre------p(q)(删除)----m(p->next)  
+		while(p!=NULL){
+				if(p->data==x){
+						q=p;  //q所指结点(地址)
+						p=p->next;  
+						pre->next=p;  //删除*q结点
+						free(q);   //释放*q结点的空间
+				}
+				else{
+						pre=p;  //此时p点不等于x，变成前驱，往后遍历
+						p=p->next;
+				}
+		}
+}
+
+/*解法二:采用尾插法建立单链表，用p指针扫描L所有结点，当其值不为x时，将其链接到L之后，否则释放*/
+void Del_X_2(LinkList &L,ElemType x){
+		//L为带头结点的单链表
+		LNode *p=L->next,*r=L,*q;       ////    L(r)---p---   //r指向尾结点，其初值为头结点
+		while(p!=NULL){
+				if(p->data!=x){
+						r->next=p;
+						r=p;  //相当于r=r->next;
+						p=p->next;//继续扫描   //r和p都向后移位   当最后一未为空，r就是尾结点
+				}
+				else{
+						q=p;     //相等的时候，把p这个位置（等于x）的位置赋值给q方便释放,后一个值赋值给这个p
+						p=p->next;
+						free(q);
+				}
+		}
+		r>next=NULL;//插入结束后置尾指针为NULL
+}
+//上述两个算法扫描一遍链表，时间复杂度为O(n),空间复杂度O(1)
 
 //03 L带头结点的单链表，实现逆序输出每个结点值
+/**
+		改变链表的方向。还可借助栈实现（每经过一个结点时，将该结点放入栈中，遍历完链表之后，再从栈顶开始输出结点值）、还可递归实现每次访问
+		一个结点，先递归输出它后面的结点，再输出结点本身
+*/
+void R_Print(LinkList L){
+		//从尾到头输出单链表L的每个结点的值
+		if(L->next!=NULL){
+				R_Print(L->next); //递归
+		}
+		if(L!=NULL)   //先输出最后一位，再输出之前
+				print(L->data); //输出函数
+}
+void R_Ignore_Head(LinkList L){
+		if(L->next!=NULL)
+				R_Print(L->next);  //不是最后一个元素，递归实现取得最后一个值位置，从而输出
+}
 
 //04 带头结点单链表L删除一个最小值结点高效算法（假设最小值是唯一的）
+LinkList Delete_Min(LinkList &L){
+		//L是带头结点的单链表，
+		LNode *pre=L,*p=pre->next;//p为工作指针，pre为其前驱  ..(L)-pre(minpre)...p(minp)(删除)...minp->next
+		LNode *minpre=pre,*minp=p;//保存最小值及前驱
+		while(p!=NULL){
+				if(p->data<minp->data){  //存在更小的
+						minp=p;
+						minpre=pre;
+				}
+				pre=p;
+				p=p->next;  //继续扫描下个结点
+		}
+		minpre->next=minp->next;
+		free(minp);  //删除最小值结点
+		return L;
+}
 
 //05 带头结点单链表L就地逆置，“就地”辅助空间复杂度为O(1)
+LinkList Reverse_1(LinkList L){
+		//解法一：头结点摘下，从第一结点开始，一次插到头结点之后（头插法建立单链表），直到最后一个结点为止
+		LNode *p,*r;//p为工作指针，r为p的后继，以防断链
+		p=L->next;//从第一个结点开始
+		L->next=NULL;//先将头结点L的next域置为NULL   --------L---p---r(p->next)
+		while(p!=NULL){
+				r=p->next;
+				p->next=L->next;  //p结点插入到头结点之后  ----p-----r(p)
+				L->next=p;
+				p=r;
+		}
+		return L;
+}
+
+//解法二：
+LinkList Reverse_1(LinkList L){
+//依次遍历线性表L，并将结点指针反转
+		LNode *pre,*p=L->next,*r=p->next; ------L(pre)--p--r---(《《《《《《)
+		p->next=NULL;    //处理第一个结点
+		while(r!=NULL){  //r为空，说明p为最后一个结点
+				pre=p;
+				p=r;
+				r=r->next;
+				p->next=pre; //指针反转
+		}
+		L->next=p; //处理最后一个结点
+		return L;
+}
+//时间复杂度O(n),空间复杂度O(1)
+
 
 //06 带头结点L单链表，实现元素递增有序
+//采用直接插入排序，构成一个数据结点的有序单链表，然后依次扫描剩下，插入p的前驱和后继
+void Sort(LinkList &L){
+		//实现单链表L的重排，使其递增有序
+		LNode *p=L->next,*pre;
+		LNode *r=p->next;//r保持*p后继结点指针，以保持不断链
+		p->next=NULL;
+		p=r;  //---L---p(---r)》p(r)（第一个元素）,(从L中遍历找出比p大的数据插入),,,,
+		while(p!=NULL){
+				r=p->next;  //--pre(L)        p---r---
+				pre=L;
+				while(pre->next!=NULL&&pre->next->data<p->data) //后大于前
+						pre=pre->next;//在有序表中查找插入*p的前驱结点*pre
+				p->next=pre->next;
+				pre->next=p;
+				p=r;//扫描原单链表中剩下的结点
+		}
+}
 
 //07 带头结点单链表所有元素数据值无序，删除表中介于给定两个值（作为函数参数给）之间的元素（若存在）
+void RangeDelete(LinkList &L,int min,int max){
+		LNode *pr=L,*p=L->link;//p是检测指针，pr是前驱指针  p->link表示当前节点（p）的下一个节点
+		while(p!=NULL){
+				if(p->data>min&&p->data<max){  //寻找被删除点，删除
+						pr->link=p->link;
+						free(p);
+						p=p->link;
+				} 
+				else{						//否则继续寻找被删结点
+						pr=p;
+						p=p->link;  //---pr--p--p->link
+				}
+}
 
 //08 给定两个单链表，找出两个链表的公共结点
+/**
+		两个结点有公共结点，即两个链表从某一结点开始，他们的next都指向同一个结点。由于只有一个next域，从第一个公共结点开始，后面就是重合的，不可能
+		再分叉。所以两个有公共结点而部分重合的单链表，拓扑形状看起来像Y，不是X：
+		只需分别遍历两个链表到最后一个结点，若两个尾结点是一样的，则说明他们有公共结点，否则两个链表没有公共结点。
+		（但是顺序遍历并不能保证两个链表同时到达链表的尾结点，长度可能不同。假设一个结点比另外一个结点长k，现在长链表的上面遍历k个结点，之后
+		再同步遍历。时间复杂度O(len1+len2)）
+*/
+LinkList Search_lst_Common(LinkList L1,LinkList L2){
+		//本算法实现在线性的时间内找到两个单链表的第一个公共结点
+		int len1=Length(L1),len2=Length(L2);//计算两个链表表长
+		LinkList longList,shortList;//分别指向表长较长和较短的链表
+		if(len1>len2){
+				longList=L1->next;
+				shortList=L2->next;
+				dist=len1-len2;//表长之差
+		}
+		else{
+				longList=L2->next;
+				shortList=L1->next;
+				dist=len2-len1;//表长之差
+		}
+		while(dist--)  //表长的链表先遍历到第dist个结点，然后同步
+				longList=longList->next;
+		while(longList!=NULL){ //同步寻找公共结点
+				if(longList==shortList) //找到第一个公共结点
+						return longList;
+				else{
+						longList=longList->next;
+						shortList=shortList->next;
+				}
+		}
+		return NULL;
+}
 
 //09 带头结点的单链表，head头指针，结点结构为（data，next），data为整型元素，next为指针，递增次序输出单链表中各结点的数据元素并
 //释放结点所占的存储空间（不允许使用数组作为辅助空间）
+/**
+		算法思想：对链表进行遍历，在每次遍历之后找到整个链表最小值元素，输出并释放结点所占空间；再寻找次小值元素，输出并释放空间，如此下去
+		直到链表为空，最后释放头结点所占存储空间。时间复杂度O(n^2)
+*/
+
+void Min_Delete(LinkList &head){
+//head是带头结点的单链表的头指针，递增顺序输出单链表中的数据元素
+		while(head->next!=NULL){//循环到仅剩头结点
+				LNode *pre=head; //pre为元素最小值结点的前驱结点的指针
+				LNode *p=pre->next; //p为工作指针       ---pre(head)---p(pre->next)---p->next
+				while(p->next!=NULL){
+						if(p->next->data<pre->next->data)
+								pre=p;
+						p=p->next;
+				}
+				print(pre->next->data);//输出最小值结点数据
+				u=pre->next;//删除最小值结点的元素
+				pre->next=u->next;
+				free(u);
+		}
+		free(head);//释放头结点
+}
+
 
 //10 带头结点的单链表A分解为两个带头结点的单链表A,B，使得A表中含有原表中序号为奇数的元素，B表中为含偶数序号，且保持相对顺序不变
+//算法思想"设置一个访问序号变量（初值为0），每访问一个结点序号自动加1，然后根据序列的奇偶性将结点插入A/B.重复上操作到表尾
+LinkList DisCreat_l(LinkList &A){
+		//将表A中结点按序号的奇偶性分解到表A/B
+		int i=0;
+		LinkList B=(LinkList)malloc(sizeof(LNode)); //创建B表表头
+		B->next=NULL;
+		LNode *ra=A,*rb=B,*p;//A/B表尾的尾结点
+		p=A->next;
+		A->next=NULL;
+		while(p!=NULL){
+				i++;
+				if(i%2==0){
+						rb->next=p;
+						rb=p;
+				}
+				else{
+						ra->next=p;
+						ra=p;
+				}
+				p=p->next;
+		}
+		ra->next=NULL;
+		rB->next=NULL;
+		return B;
+}
 
 //11 C={a1,b1,a2,……an,bn}为线性表，采用带头结点的hc单链表存放，拆分为两个线性表，就地算法，使得A={a1,a2……an},B={b1,b2……bn}
 
