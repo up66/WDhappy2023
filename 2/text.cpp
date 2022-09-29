@@ -761,15 +761,105 @@ LinkList DisCreat_l(LinkList &A){
 }
 
 //11 C={a1,b1,a2,……an,bn}为线性表，采用带头结点的hc单链表存放，拆分为两个线性表，就地算法，使得A={a1,a2……an},B={b1,b2……bn}
+//算法思想：采用上题思想，不设序号变量，两者的差异仅在于对B表的建立不采用尾插法，而是采用头插法
+LinkList DisCreate_2(LinkList &A){
+		LinkList B=(LinkList)malloc(sizeof(LNode));//创建B表表头
+		B->next=NULL;  //B表的初始化
+		LNode *p=A->next,*q;  //p为工作指针  ---ra---p
+		LNode *ra=A;//ra始终指向A的尾结点 
+		while(p!=NULL){
+				ra->next=p;  //将*p链到A的表尾   B->next=NULL p=A->next  q=p->next  （A之后一个元素存到B中）	
+				ra=p;
+				p=p->next;
+				if(p!=null){
+						q=p->next;  //-----B------     ---p--q---
+						p->next=B->next;//头插后，*p将断链，因此用q记忆*p的后继
+						B->next=p;  //将*p插入到B的前端
+						p=q;
+				}
+		}
+		ra->next=NULL;
+		return B;
+
+}
 
 //12 在递增有序的线性表中，有数值相同元素存在。存储方式为单链表，去掉数值相同的元素，使得表中无重复的元素
 //例如{7,10,10,21,30,42,42,42,51,70}将变为{7,10,21,30,42,51,70}
+//算法思想：由于是有序表，所有相同值域的结点都是相邻的，用p扫描递增单链表L，若*p结点的值域 //时间复杂度O(n),空间复杂度O(1)
+void Del_Same(LinkList &L){
+		//L是递增有序单链表，本算法删除表中数值相同的元素
+		LNode *p=L->next,*q;//p为工作指针
+		if(p==NULL)
+				return;
+		while(p->next!=NULL){
+				q=p->next;//q指向*p的后继指针  ---p--q(删除此结点)---
+				if(p->data==q->data){  //找到重复值的结点
+						p->next=q->next;
+						free(q);//释放相同元素值的结点
+				}
+				else
+						p=p->next;
+		}
+}
 
 //13 两个按元素递增次序排列的线性表，均以单链表形式存储。合并这两个为一个按元素递减次序排列的单链表，
 //要求利用原来两个单链表的结点存放归并后的单链表
+/**
+		算法思想：两个单链表已经按元素递增次序排列，将其合并时，均从第一个结点开始进行比较，将最小的结点链入链表中，同时后移工作指针。
+		该问题要求结果链表按元素值递减次序排列，故新结点的建立应该头插法。比较解读后可能会有一个链表为空，头插法一次将剩余结点插入
+*/
+void MergeList(LinkList &La,LinkList &Lb){
+		//合并两个递增有序链表（带头结点），并使合并后的链表递减排列
+		LNode *r,*pa=La->next,*pb=Lb->next;//分别La和Lb的工作指针
+		La->next=NULL;//La作为结果链表的头指针，先将结果链表初始化为空-La-pa--
+		while(pa&&pb)
+				if(pa->data<=pb->data){  //---pa--r--       --------pb------
+						r=pa->next;//r暂存pa的后继结点指针(pa结果小，去除pa,送到La中)
+						pa->next=La->next;
+						La->next=pa;
+						pa=r;///(恢复pa)为当前待比较结点
+				}
+				else{
+						r=pb->next;
+						pb->next=La->next;
+						La->next=pb;
+						pb=r;
+				}
+				if(pa)
+						pb=pa;//处理剩余的部分(pa落下)
+				while(pb){  //依次插入到La中（头插法）
+						r=pb->next;
+						pb->next=La->next;
+						La->next=pb;
+				}
+				free(Lb);
+}
 
 //14 设A,B是两个单链表（带头结点），其中元素递增有序，设计一个算法从A和B中的公共元素产生链表C，要求不破坏A,B结点
- 
+/**
+		算法思想：表A,B都有序，可以从第一个元素起依次比较A,B两表的元素，若元素值不等，则值小的后移，若相等，创建一个值等于两结点的元素值的新结点
+		使用尾插法插入到新链表中，并将两个原表指针后移一位，直到其中一个链表遍历到表尾
+*/ 
+void Get_Common(LinkList A,LinkList B){
+		//本算法产生单链表A和B的公共元素的单链表
+		LNode *p=A->next,*q=B->next,*r,*s;
+		LinkList C=(LinkList)malloc(sizeof(LNode));//建立表C
+		r=C;//r始终指向C的尾结点
+		while(p!=NULL&&q!=NULL){
+				if(p->data<q->data)
+						p=p->next;//若A的当前元素较小，后移指针
+				else if(p->data>q->data)
+						q=q->next;//若B的当前元素较小，后移指针
+				else{
+						s=(LNode*)malloc(sizeof(LNode));
+						s->data=p->data;//复制产生结点*s
+						r->next=s;
+
+				}
+		}
+}
+		
+
 //15 A,B表示两个集合，其元素递增偶爱列，A和B的交集，存放到A集合中
 
 //16 A=a1,a2……am，B=b1,b2……bn已经存入到两个单链表中，判断B是否是A的连续子序列
