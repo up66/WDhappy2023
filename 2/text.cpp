@@ -854,13 +854,16 @@ void Get_Common(LinkList A,LinkList B){
 						s=(LNode*)malloc(sizeof(LNode));
 						s->data=p->data;//复制产生结点*s
 						r->next=s;
-
+						r=s;
+						p=p->next;
+						q=q->next;
 				}
 		}
 }
 		
 
 //15 A,B表示两个集合，其元素递增偶爱列，A和B的交集，存放到A集合中
+
 
 //16 A=a1,a2……am，B=b1,b2……bn已经存入到两个单链表中，判断B是否是A的连续子序列
 
@@ -896,7 +899,20 @@ void Get_Common(LinkList A,LinkList B){
 (2)代码、注释
 (3)时空复杂度
 */
+//采用归并思想，设置两个工作指针pa,pb，对两个链表进行归并扫描，
+//只有同时出现在两集合的元素才链接到结果表中且只保留一个,其他结点全部释放，当一个链表遍历完毕后，释放另一个
+//表中剩下的全部结点
+LinkList Union(LinkList &la,LinkList &lb){
+	pa=la->next; //设工作指针分别为pa,pb
+	pb=lb->next;
+	pc=la;
+	while(pa&&pb){
+		if(pa->data==pb->data){
+			
+		}
+	}
 
+}
 
 //24 单链表保存m个整数，结点结构[data][link],且|data|<=n(n为正整数)。对于链表中data绝对值相等的结点，仅保留第一次出现的结点而删除其他
 //绝对值相等的结点。例如head如下：head->21->-15->-15->-7->15  删除之后：head->21->-15->-7
@@ -904,7 +920,7 @@ void Get_Common(LinkList A,LinkList B){
 (1)算法基本思想
 (2)单链表结点的数据类型定义
 (3)代码、注释
-(4)时空复杂度
+(4)时空复杂度（O（m） O（n）申请数组空间用了n+1。初始都置为0，后面有重复就+1.判断0之后就删除）
 */
 
 
@@ -922,15 +938,721 @@ typedef struct node{
 (3)代码、注释
 (4)时空复杂度
 */
-
+//实现：一个一步走，一个两步（到最后，第一个为中点，第二个为尾结点。尾结点重新指向中位后第一个，头插法逆置
+//然后再 进行插入  O（m）O（n））
 
 
 /*********************************3  栈，队列*******************************************/
+#define MaxSize 50
+typedef struct {
+	ElemType data[MaxSize]; //存放栈中元素
+	int top;//栈顶指针
+}SqStack;
+/**
+栈顶指针S.top  初始设置:S.top=-1  栈顶元素S.data[S.top]
+65页
+栈空:S.top==-1   栈满:S.top==MaxSize-1  栈长:S.top+1  (顺序栈可能栈上溢)
+*/
+//（1）初始化
+void InitStack(SqStack &S){
+	S.top=-1;
+}
+//（2）判栈空
+bool StackEmpty(SqStack S){
+	if(S.top==-1)
+		return true;
+	else
+		return false;
+}
+//（3）进栈
+bool Push(SqStack &S,ElemType x){
+	if(S.top==MaxSize-1)//栈满 报错
+		return false;
+	S.data[++S.top]=x;//指针先加1，再入栈
+	return true;
+}
+//（4）出栈
+bool Pop(SqStack &S,ElemType &x){
+	if(S.top==-1)
+		return false;
+	x=S.data[S.top--];//先出栈，指针再减一
+	return true;
+}
+//（5）读栈顶元素
+bool GetTop(SqStack S,ElemType &x){
+	if(S.top==-1)
+		return false;
+	x=S.data[S.top];
+	return true;
+}
+
+//链栈
+typedef struct Linknode{
+	ElemType data;  //数据域
+	struct Linknode *next;//指针域 
+}*LiStack;
+
+/**     综合应用题70          */
+//3 序列是否合法 i o 初始和终态均为空
+int Judge(char A[]){
+//判断字符数组A中的输入输出序列是否是合法序列，是返回true 否false
+	int i=0;
+	int j=k=0;
+	while(A[i]!='\0'){//未到字符数组尾
+		case 'I':
+			j++;
+			break;
+		case 'O':
+			k++;
+			if(k>j){
+				printf("序列非法\n");
+				exit(0);
+			}
+		i++;
+	}
+	if(j!=k){
+		printf("序列非法\n");
+		return false;
+	}
+	else{
+		printf("序列合法\n");
+		return true;
+	}
+}
+//是否中心对称
+int dc(LinkList L,int n){
+//L是带头结点的n个元素单链表，本算法判断链表是否中心对称
+	int i;
+	char s[n/2];//s字符栈
+	p=L->next;//p工作指针
+	for(i=0;i<n/2;i++){ //链表的前一半元素进栈
+		s[i]=p->data;
+		p=p->next;
+	}
+	i--; //恢复最后的i值
+	if(n%2==1) //奇数 后移过中心结点
+		p=p->next;
+	while(p!=NULL&&s[i]==p->data){//检测是否中心对称
+		i--;//中前向前
+		p=p->next;//中后向后
+	}
+	if(i==-1)
+		return 1;//中心堆成
+	else
+		return 0;//不中心堆成
+}
+
+//s1,s2顺序栈 栈顶相向 迎面增长存储方式 设计进栈出栈操作 -----1》《maxsize------
+/**
+两个栈共享向量空间，将两个栈的栈底设在向量两端，初始时，s1栈顶指针为-1 s2为maxsize
+两个栈顶相邻时为栈满，栈顶元素互指
+
+*/
+#define maxsize 100
+#define elemtp int  //假设元素类型为整数
+typedef struct {
+	elemtp stack[maxsize]; //栈空间
+	int top[2];//top为两个栈顶指针
+}stk;
+stk s;  //s是如上定义的结构类型变量，为全局变量
+//(1)入栈
+int push(int i,elemtp x){
+//入栈操作，i为栈号，i=0表示左边的s1栈，i=1表示右边的s2栈 x是入栈元素
+	if(i<0||i>1){
+		printf("栈号输入不对");
+		exit(0);
+	}
+	if(s.top[1]-s.top[0]==1){
+		printf("栈已满");
+		return 0;
+	}
+	switch(i){
+	case 0: 
+		s.stack[++s.top[0]]=x; //左边从头开始增长下标
+		return 1;
+		break;
+	case 1:
+		s.stack[--s.top[1]]=x; //右边从中间开始减下标
+		return 1;
+	}
+}
+//(2)出/退栈
+elemtp pop(int i){
+//退栈算法，i代表栈号，i=0时为s1栈，i=1时为s2栈
+//退栈成功返回退栈元素，否则返回-1
+	if(i<0||i>1){
+		printf("栈号输入错误");
+		exit(0);
+	}
+	switch(i){
+	case 0:
+		if(S.top[0]==-1){
+			printf("栈空\n");
+			return -1;
+		}
+		else
+			return s.stack[s.top[0]--]; //栈是先进后出
+		break;
+	case 1:
+		if(S.top[1]==maxsize){
+			printf("栈空\n");
+			return -1;
+		}
+		else
+			return s.stack[s.top[1]++];
+		break;
+	}
+}
+
+//队列
+#define MaxSize 50
+typedef struct {
+	ElemType data[MaxSize];
+	int front,rear; //队头队尾指针
+}SqQueue;
+/**
+初始(队空):Q.front==Q.rear==0
+
+循环队列:
+初始:Q.front==Q.rear==0
+队满:Q.front==(Q.rear+1)%MaxSize
+队空:Q.front==Q.rear
+队首进:Q.front==(Q.front+1)%MaxSize
+队尾进:Q.rear==(Q.rear+1)%MaxSize
+队列长度:(Q.rear+MaxSize-Q.front)%MaxSize
+*/
+
+
+//循环队列操作
+//（1）初始化
+void InitQueue(SqQueue &Q){
+	Q.front==Q.rear==0;
+}
+//（2）判队空
+bool isEmpty(SqQueue Q){
+	if(Q.front==Q.rear)
+		retrn true;
+	else
+		return false;
+}
+//（3）入队  //先进先出(假溢出) (尾入头出)
+bool Enqueue(SqQueue &Q,ElemType x){
+	if(Q.front==(Q.rear+1)%MaxSize)
+		return false;
+	Q.data[Q.rear]=x;
+	Q.rear=(Q.rear+1)%MaxSize;
+	return true;
+}
+//（4）出队
+bool DeQueue(SqQueue &Q,ElemType &x){
+	if(Q.front==Q.rear)
+		return false;
+	x=Q.data[Q.front];
+	Q.front=(Q.front+1)%MaxSize;
+	return true;
+}
+
+
+
+
+//队列的链式存储
+typedef struct LinkNode{
+	ElemType data;
+	struct LinkNode *next; 
+}LinkNode;
+
+typedef struct {
+	LinkNode *front,*rear;
+}LinkQueue;
+
+/**
+链式队列为空:Q.front=NULL且Q.rear=NULL(不带头结点的链式队列操作麻烦点,通常带上结点)
+*/
+//链式队列操作
+(1)初始化
+void InitQueue(LinkQueue &Q){
+	Q.front==Q.rear=(LinkNode*)malloc(sizeof(LinkNode));//建立头结点
+	Q.front->next=NULL;
+}
+(2)判队空
+bool IsEmpty(LinkQueue Q){
+	if(Q.front==Q.rear)
+		return true;
+	else
+		return false;
+}
+(3)入队
+void EnQueue(LinkQueue &Q,ElemType x){
+	LinkNode *s=(LinkNode*)malloc(sizeof(LinkNode));
+	s->data=x; //创建新结点
+	s->next=NULL;
+	Q.rear->next=s;
+	Q.rear=s;
+}
+
+(4)出队
+bool DeQueue(LinkQueue &Q,ElemType &x){
+	if(Q.front==Q.rear)
+		return true;
+	LinkNode *p=Q.front->next;
+	x=p->data; //p出队
+	Q.front->next=Q.front;
+	if(Q.rear==p)
+		Q.rear=Q.front;  //原队列只有一个结点，删除后变空
+	free(p);
+	retun true;
+}
+
+
+////应用题85 
+//1循环队列都能利用到，tag整型整量，进队1，出队0
+/**
+初始:Q.front=Q.rear=0 tag=0
+队空:Q.front=Q.rear  Q.tag==0
+队满:Q.front=Q.rear  Q.tag==1
+进队:Q.data[Q.rear]=x    Q.rear=(Q.rear+1)%MaxSize  Q.tag=1
+出队:x=Q.data[Q.front]   Q.front=(Q.front+1)%MaxSize  Q.tag=0
+*/
+
+int EnQueue(SqQueue &Q,ElemType x){
+	if(Q.front==Q.rear&&Q.tag==1)
+		return 0;//队满(只有入队)
+	Q.data[Q.rear]=x;
+	Q.rear=(Q.rear+1)%MaxSize;
+	Q.tag=1;
+	return 1;
+}
+int DeQueue1(SqQueue &Q,ElemType &x){
+	if(Q.front==Q.rear&&Q.tag==0)
+		return 0;//队空(只有出队)
+	x=Q.data[Q.front];
+	Q.front=(Q.front+1)%MaxSize;
+	Q.tag=0;
+	return 1;
+}
+
+//2  Q队列 S空栈，逆置(出队列-入栈-出栈-入队列)
+void Inverser(Stack &S,Queue &Q){
+//本算法实现将队列中的元素逆置
+	while(!QueueEmpty(Q)){
+		x=DeQueue(Q);
+		Push(S,x);
+	}
+	while(!StackEmpty(Q)){
+		Pop(S,x);
+		EnQueue(Q,x);
+	}
+
+}
+
+//3 利用s1，s2栈模拟队列
+/**
+(1)对s2出栈操作出队，若s2为空，则先将s1中的所有元素送到s2
+(2)对s1入栈作入队，若s1满，必须先保证s2为空，才能将s1元素全部插入到s2
+*/
+//入队
+int EnQueue(Stack &S1,Stack &S2,ElemType e){
+	if(!StackOverflow(S1)){
+		Push(S1,e);  //入到s1满
+		return 1;
+	}
+	if(StackOverflow(S1)&&!StackEmpty(S2)){
+		printf("队列满");
+		return 0;
+	}
+	if(StackOverflow(S1)&&StackEmpty(S2)){
+		while(!StackEmpty(S1)){
+			Pop(S1,x);  //s1出，s2入
+			Push(S2,x);
+		}
+	}
+	Push(S1,e);  //--x->S1->S2
+	return 1;
+}
+//出队
+void DeQueue(Stack &S1,Stack &S2,ElemType &x){
+	if(!StackEmpty(S2)){
+		Pop(S2,x);  //出到s2空
+	}
+	else if(StackEmpty(S1)){
+		printf("队列为空");
+	}
+	else{
+		while(!StackEmpty(S1)){
+			Pop(S1,x);  //s1出，s2入==>s1为空
+			Push(S2,x);  //--S1->S2->x
+		}
+	Pop(S2,x);
+	}
+}
+//判断队列为空
+int QueueEmpty(Stack S1,Stack S2){
+	if(StackEmpty(S1)&&StackEmpty(S2))
+		return 1;
+	else
+		return 0;
+}
+
+//应用
+/**
+	圆，方，花括号匹配  96
+	括号匹配是栈的典型应用
+*/
+bool BracketsCheck(char *str){
+	InitStack(S);//初始化栈
+	int i=0;
+	while(str[i]!='\0'){
+		switch(str[i]){
+			//左括号入栈
+			case '(':
+				Push(S,'(');
+				break;
+			case '[':
+				Push(S,'(');
+				break;
+			case '{':
+				Push(S,'(');
+				break;
+			//遇到右括号，检查栈顶
+			case ')':
+				Pop(S,e);
+				if(e!='(')
+					return false;
+				break;
+			case ']':
+				Pop(S,e);
+				if(e!=']')
+					return false;
+				break;
+			case '}':
+				Pop(S,e);
+				if(e!='}')
+					return false;
+				break;
+			default:
+				break;
+		}//switch
+	i++;
+	}//while
+	if(!IsEmpty(S)){
+		printf("括号不匹配\n");
+		return false;
+	}
+	else{
+		printf("括号匹配\n");
+		return true;
+	}
+
+}
+
+//车厢调度
+/**
+	两侧均单向行驶(两侧不相通)，栈道用于调度，入口有n节硬座和软座车厢（H,S）等待调度，
+	输出对n节车厢进行调度操作，使所有软座车厢都被调整到硬座车厢之前
+	算法思想：所有车厢以此检查，硬座入栈等待调度（全部），调度到软座之后
+*/
+void Train_Arrange(char *train){
+//用字符串train表示火车，H表示硬座，S表示软座
+	char *p=train,*q=train,c;
+	stack s;
+	InitStack(s);//初始化栈
+	while(*p){
+		if(*p=='H')
+			Push(s,*p);
+		else
+			*(q++)=*p;//把s调度到前部
+		p++;
+	}
+	while(!IsEmpty(s)){
+		Pop(s,c);
+		*(q++)=c;
+	}
+}
+
+//利用栈实现递归函数
+/**
+Pn(x)=| 1 n=0  //fv1
+	  |	2x n=1  //fv2
+	  | 2x*P_n-1(x)-2(n-1)*P_n-2 (x) n>1
+	  算法思想：用栈用于保存n和对应的Pn(x)值
+*/
+double p(int n,double x){
+	struct stack{
+		int no;//保存n值
+		double val;//保存Pn(x)值
+	}st[MaxSize];
+	int top=-1,i;//top为栈st的下标值变量
+	double fv1=1,fv2=2*x;//n=0,n=1的初值
+	for(i=n;i>=2;i--){  //n值变化  n n-1 n-2 ……2（n>1）
+		top++;
+		st[top].no=i; //top=1 st[1].no=n
+	}  //入栈
+	while(top>=0){
+		st[top].val=2*x*fv2-2*(st[top].no-1)*fv1; //st[1].val=2x*2x-2(n-1)1  P(x)
+		fv1=fv2;    //1---》2x   P_n-2 (x) 
+		fv2=st[top].val; //n>1时的值   //2x--》P(x)  P_n-1 (x) 作为新的递归带入数据 直到top<0
+		top--;  //出栈
+	}
+	if(n==0)
+		return fv1;
+	return fv2;  //方式满足n>=1
+
+}
+
+
+//汽车轮渡
+/**                                                                               
+	每次10辆（车分为客车和货车）
+	规定：同类车先到先上船，客车优先于货车，每上4辆客车，才允许放1辆货车；若客车不足4辆，则货车代替
+	无货车等待，允许客车都上船
+*/
+
+Queue q;//
+Queue q1;//客车队列
+Queue q2;//货车队列
+void manager(){
+	int i=0;j=0;//j表示渡船
+	while(j<10){
+		if(!QueueEmpty(q1)&&i<4){  //客车不足4辆，
+			DeQueue(q1,x);//客车队列出列
+			EnQueue(q,x);//客车上渡船
+			i++; //客车数加一
+			j++;//渡船上的总车辆数加1
+		}
+		else if(i==4&&!QueueEmpty(q2)){ //客车已上足4辆 !QueueEmpty(q2)货车为空
+			DeQueue(q2,x);//货车队列出列
+			EnQueue(q,x);
+			j++;
+			i=0;//每上一辆货车，i重新计数 (因为4辆客车，1辆货车)
+		}
+		else{
+			while(j<10&&i<4&&!QueueEmpty(q2)){ //一次不足10辆，货车不为空
+				DeQueue(q2,x);//货车队列出列(即客车少了，用货车替代)
+				EnQueue(q,x);//货车上渡船
+				i++;
+				j++;
+			}
+			i=0;
+		}
+		if(QueueEmpty(q1)&&QueueEmpty(q2))//客车空，货车空
+			j=11;  //不参与渡船
+	}
+}
 
 /*********************************4  串*******************************************/
+//定长顺序存储
+#define MAXSIZE 255
+typedef struct {
+	char ch[MAXSIZE]; //每个分量存储一个字符  地址连续
+	int length;
+}
+
+//堆分配存储表示
+typedef struct {
+	char *ch;//按串长分配存储区，ch指向串的基地址
+	int length;//串长   地址连续
+}HString;
 
 
+//简单模式匹配算法 定位操作，返回在母串第一次出现的位置
+int Index(SString S,SString T){
+	int i=1,j=1;
+	while(i<=S.length && j<=T.length){
+		if(S.ch[i]==T.ch[i]){
+			++i;
+			++j;//继续比较后继字符
+		}
+		else{
+			i=i-j+2;//母串指针后退重新匹配
+			j=1;//子串从头开始
+		}
+	}
+	if(j>T.length)
+		return i-T.length; //母-子串长度
+	else
+		return 0;
+}
+
+//求模式串的next  117
+void get_next(String T,int next[]){
+	int i=1;j=0;
+	next[1]=0;
+	while(i<T.length){
+		if(j==0||T.ch[i]==T.ch[j]){//T.ch[1]==T.ch[0]  由此可得next[1]=1(开始固定就是 0 1)
+			++i;
+			++j;
+			next[i]=j;//若Pi=Pj 则next[j+1]=next[j]+1  //next[2]=1=next[1]]+1
+		}
+		else
+			j=next[j]; //不相等就j=0(j回退)，然后进入上面循环进行比较
+	}
+}
+//O(mn) 一般情况下，近似//O(m+n)
+
+
+
+//KMP算法 //O(m+n) 一般比普通算法快得多，优点是主串不回溯（一直向下寻找，next是回溯记录寻找）
+int Index_KMP(String S,String T,int next[]){
+	int i=1,j=1;
+	while(i<=S.length&&j<=T.length){
+		if(j==0||S.ch[i]=T.ch[j]){
+			++i;
+			++j;//继续向后比较
+		}
+		else
+			j=next[j]; //模式串向右移动(不同) next[1]=0;
+	}
+	if(j>T.length)
+		return i-T.length;//匹配成功，返回第一次出现的位置
+	else
+		return 0;
+}
+
+
+//KMP算法的进一步优化
+void get_nextval(String T,int nextval[]){
+	int i=1,j=0;
+	nextval[1]=0;
+	while(i<T.length){
+		if(j==0||T.ch[i]==T.ch[j]){
+			++i;
+			++j;
+			if(T.ch[i]!=T.ch[j])
+				nextval[i]=j;
+			else
+				nextval[i]=nextval[j];
+		}
+		else
+			j=nextval[j];  //子串和母串不对等，子串对比点右移
+	}
+}
 /*********************************5 树与二叉树*******************************************/
+//二叉树的链式存储结构
+typedef struct BiTNode{
+	ElemTye data; //数据域
+	struct BiTNode *lchild,*rchild;//左右孩子指针
+}BiTNode,*BiTree;  //n个结点的二叉链表中，有n+1个空链域
+
+//应用题选一个代码：134
+/**
+	二叉树 顺序存储 i,j结点最近的公共祖先结点值
+	必然存在，最坏的情况下是根结点，二叉树性质：任一结点i的双亲结点编号i/2
+	i>j 结点i所在层次大于j结点所在层次，结点i双亲结点i/2(=j)是i和j的最近公共祖先结点
+		若i/2!=j 令i=i/2 该结点的双亲结点为起点，递归继续查找 
+	i<j 同理
+*/
+ElemType Comm_Ancestor(SqTree T,int i,int j){
+//本算法在二叉树中查找结点i和j的最近公共祖先结点(递归)
+	if(T[i]!='#'&&T[j]!='#'){ //编号存在
+		while(i!=j){
+			if(i>j)
+				i=i/2;
+			else
+				j=j/2;
+		}
+		return T[i];
+	}
+}
+
+
+//二叉树 遍历 139
+//先序遍历 
+/**
+	》根》先序左》先序右  为空什么也不做
+*/
+void PreOrder(BiTree T){
+	if(T!=NULL){
+		visit(T);
+		preOrder(T->lchild);
+		preOrder(T->rchild);
+	}
+}
+
+//中序遍历
+void InOrder(BiTree T){
+	if(T!=NULL){
+		InOrder(T->lchild);
+		visit(T);
+		InOrder(T->rchild);
+	}
+}
+
+//后序遍历
+void PostOrder(BiTree T){
+	if(T!=NULL){
+		PostOrder(T->lchild);
+		PostOrder(T->rchild);
+		visit(T);
+	}
+}
+
+
+//中序遍历的非递归算法(左中右)
+void InOrder2(BiTree T){
+	InitStack(S);
+	BiTree p=T;//初始化栈（先进后出），p是遍历指针
+	while(p||!IsEmpty(S)){  //栈不为空或p不为空时循环
+		if(p){  
+			Push(S,p);//当前结点入栈
+			p=p->lchild;//左孩子不为空，一直向左走  
+		}//左孩子全部入栈   依次访问出栈结点的左右孩子
+		else{
+			Pop(S,p);
+			visit(p);//栈顶元素出栈，访问出栈结点（此时是左结点）
+			p=p->rchild;//向右子树走
+		}
+	}
+}
+
+//先序遍历的非递归算法  根左右
+void PreOrder2(BiTree T){
+	InitStack(S);
+	BiTree p=T;//初始化栈（先进后出），p是遍历指针
+	while(p||!IsEmpty(S)){  //栈不为空或p不为空时循环
+		if(p){  
+			visit(p);
+			Push(S,p);//当前结点入栈
+			p=p->lchild;//左孩子不为空，一直向左走  
+		}//左孩子全部入栈   依次访问出栈结点的左右孩子
+		else{
+			Pop(S,p);
+			p=p->lchild;//向左子树走
+		}
+	}
+}
+
+
+//层次遍历  94  142 WD
+void levelOrder(BiTree T){
+	InitQueue(Q);//初始化辅助队列
+	BiTree p;
+	EnQueue(Q,T);//将根结点入队
+	while(!IsEmpty(Q)){
+		DeQueue(Q,p);
+		visit(p);  //访问出队结点
+		if(p->lchild!=NULL)
+			DeQueue(Q,p->lchid); //左子树不为空，左子树根结点入队
+		if(p->rchild!=NULL)
+			DeQueue(Q,p->rchid); //右子树不为空，右子树根结点入队
+	}
+}
+
+
+//线索二叉树
+// lchild ltag data rtag rchild
+
+/**
+ltag:    0 lchild左孩子      1 lchild前驱
+rtag:	 0 rchild右孩子      1 lchild后继
+*/
+
+//线索二叉树存储结构：
+typedef struct ThreadNode{
+	ElemType data;
+	struct ThreadNode *lchild,*rchild;
+	int ltag,rtag;
+}ThreadNode,*ThreadTree;
+
 
 //p135王道
 // 05 已知一二叉树顺序结构存储，求编号分别为i和j的两个结点的最近的公共祖先结点的值
@@ -955,4 +1677,4 @@ typedef struct node{
 
 //5 层次遍历
 
-//p149
+//p149 

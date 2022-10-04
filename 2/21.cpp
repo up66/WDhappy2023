@@ -67,6 +67,7 @@ int main()
 #include <stdio.h>
 #include <malloc.h>
 #include <stdlib.h>  
+#include <string.h>  
 #define MaxSize 50
 #define InitSize 100
 typedef int ElemType;
@@ -82,6 +83,13 @@ typedef struct {
 	int length;  //数组的最大容量和当前个数
 }SeqList;		//动态分配数组顺序表的类型定义
 //c:malloc,c++:new
+
+
+//单链表定义
+typedef struct LNode{
+	ElemType data; //数据域
+	struct LNode *next;  //指针域
+}LNode,*LinkList;	
 
 
 //11 插入操作 i位置(1<=i<L.length+1)
@@ -149,15 +157,126 @@ bool Merge(SqList A,SqList B,SqList &C){
 		return true;
 }
 
+///////////////////////////////////////////指针练习
+LinkList Reverse_1(LinkList L){
+		//解法一：头结点摘下，从第一结点开始，一次插到头结点之后（头插法建立单链表），直到最后一个结点为止
+		LNode *p,*r;//p为工作指针，r为p的后继，以防断链
+		p=L->next;//从第一个结点开始
+		L->next=NULL;//先将头结点L的next域置为NULL   --------L---p---r(p->next)
+		while(p!=NULL){
+				r=p->next;
+				p->next=L->next;  //p结点插入到头结点之后  ----p-----r(p)
+				L->next=p;
+				p=r;
+		}
+		return L;
+}
+
+/**
+//头插  往plist中头部插入数字val  //时间复杂度O(1)
+bool Insert_head(List plist, ElemType val)
+{
+	//1.动态创建一个新结点
+	Node* p = (Node*)malloc(sizeof(Node));
+	assert(p != NULL);
+	if (p == NULL)
+		return false;
+	//2.把数据val存放到新结点
+	p->data = val;
+	//3.把新结点插入在头结点的后面
+	p->next = plist->next;
+	plist->next = p;
+	return true;
+}
+*/
+
+//打印
+/**
+void Show(LinkList list)
+{
+	//LNode *p=(LNode*)malloc(sizeof(LNode)); 
+	for (LNode* p = list->next; p != NULL; p = p->next) //遍历所有的数据结点
+	{
+		printf("%d ", p->data);
+	}
+	printf("\n");
+}
+*/
+
+//逆置
+LinkList Reverse(LinkList &L)
+{
+	LinkList p,q;
+	p=L->next;
+	L->next=NULL;   //重新构造单链表
+	while(p!=NULL)
+	{
+		q=p;
+		p=p->next;
+		
+		q->next=L->next;  //头插法 
+		L->next=q;
+	} 
+	return L;
+} 
 int main()
 {
 		SqList L;
 		SqList B;
 		SqList C;
+		//LinkList L=(LinkList)malloc(sizeof(LNode));
+		//struct LNode *List,*p,*q;
+		//p->next=NULL;//创建头结点
+
+		LinkList A = (LinkList)malloc(sizeof(LNode));
+		LinkList a1 = (LinkList)malloc(sizeof(LNode));
+		LinkList a2 = (LinkList)malloc(sizeof(LNode));
+		LinkList a3 = (LinkList)malloc(sizeof(LNode));
+		LinkList a4 = (LinkList)malloc(sizeof(LNode));
+		A->next=a1;
+		a1->next=a2;
+		a2->next=a3;
+		a3->next=a4;
+		a4->next=NULL;
+		a1->data=1;
+		a2->data=2;
+		a3->data=3;
+		a4->data=4;
+		LinkList p=A->next;
+		printf("A中元素：");
+		while(p){
+			printf("%d ",p->data);
+			p=p->next;
+		}
+		p=Reverse(A);
+		printf("\n单链表逆置之后A中的元素：\n");
+		for(p=p->next;p!=NULL;p=p->next)
+		{
+			printf("%d ",p->data);
+		}
+
+
 		int i=0,e=0;
 		int flag=0;
 		L.length=0;
 		B.length=0;
+	/**
+		int a[]={1,3,5,2,7,10,12};
+		int length=sizeof(a)/sizeof(int);
+		printf("%d\n", sizeof(a)/sizeof(int));
+		List=(LinkList)malloc(sizeof(LNode)); //创建头结点
+		/////////////////链表操作
+		printf("sfdsf");
+		for(i=0;i<length;i++){
+			printf("sfdsf");
+			q=p->next;
+			printf("sfdsf");
+			LNode *p=(LNode*)malloc(sizeof(LNode));  //创建插入新结点
+			q->data=a[i];
+			q=List->next;
+		}
+		Show(List);*/
+		/////////////////////
 		for(i=0;i<10;i++){
 				L.data[i]=i;//赋初值
 				L.length++; //length不能丢
@@ -174,6 +293,9 @@ int main()
 		//Delete_Same(L);
 		int local=LocalElem(L,5);//查找元素为5的位置（不是下标）
 		//printf("%d\n",local);
+		//for(i=0;i<a.length;i++){
+			
+		//}
 		for(i=0;i<C.length;i++){
 				printf("%d\t",C.data[i]);
 		}
